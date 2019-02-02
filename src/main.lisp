@@ -78,7 +78,7 @@
   (get-data symbol url))
 
 (defun show (symbol)
-  (let ((text (get-text symbol)))
+  (let ((text (get-data symbol text)))
     (if text
         (pprint-text text)
         (format t "No documentation found on ~a.~%" symbol))))
