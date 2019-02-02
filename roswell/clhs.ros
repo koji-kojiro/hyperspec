@@ -5,15 +5,47 @@ exec ros -Q -- $0 "$@"
 |#
 (progn ;;init forms
   (ros:ensure-asdf)
-  #+quicklisp(ql:quickload '(:hyperspec) :silent t)
-  )
+  (ql:quickload '(:hyperspec :unix-opts)
+                :silent t))
+
+(opts:define-opts
+  (:name :help
+   :description "Print this help and exit."
+   :short #\h
+   :long "help")
+  (:name :url
+   :description "Print url instead of document."
+   :short #\u
+   :long "url"))
 
 (defpackage :ros.script.clhs.3758107750
   (:use :cl))
 (in-package :ros.script.clhs.3758107750)
 
+(defun help ()
+  (opts:describe :args "symbol" :usage-of "clhs")
+  (opts:exit 1))
+
+(defmacro when-option ((options opt) &body body)
+  `(let ((it (getf ,options ,opt)))
+     (when it ,@body)))
+
 (defun main (&rest argv)
-  (if argv
-    (hs:show (car argv))
-    (format t "usage: clhs [symbol]~%")))
+  (multiple-value-bind (options args)
+    (handler-case
+      (if argv (opts:get-opts argv) (opts:get-opts))
+      (error () (help)))
+    (unless args (help))
+    (when (cdr args) (help))
+    (when-option (options :help) (help))
+    (handler-case
+      (progn
+        (when-option (options :url)
+          (format t "~a~%" (hs:get-url (car args)))
+          (opts:exit))
+        (hs:show (car args)))
+      (error (c)
+        (format t "~a~%" c)
+        (opts:exit 1)))))
+
 ;;; vim: set ft=lisp lisp:
