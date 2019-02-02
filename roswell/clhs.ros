@@ -44,8 +44,8 @@ exec ros -Q -- $0 "$@"
           (format t "~a~%" (hs:get-url (car args)))
           (opts:exit))
         (hs:show (car args)))
-      (error (c)
-        (format t "~a~%" c)
+      (condition (c)
+        (format t "Error: ~a~%" c)
         (opts:exit 1)))))
 
 ;;; vim: set ft=lisp lisp:
