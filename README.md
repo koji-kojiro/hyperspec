@@ -21,6 +21,23 @@ format and display the document on CLHS corresponding `symbol`.
 # clhs
 A command line tool named `clhs` is also included in this project.
 
+## Installation
+
+### With Roswell
+
+```
+$ ros install koji-kojiro.hyperspec
+```
+
+### Build from source (with SBCL)
+
+```
+$ git clone https://github.com/koji-kojiro/hyperspec.git
+$ cd hyperspec
+$ sbcl --load build.lisp
+# then place `./clhs` anywhere inlcluded in PATH
+```
+
 ## Usage
 
 ```
@@ -30,6 +47,7 @@ Usage: clhs [-h|--help] [-u|--url] symbol
 Available options:
   -h, --help               Print this help and exit.
   -u, --url                Print url instead of document.
+ -n, --nocolor            Do not use ANSI escapes.
 
 ```
 
