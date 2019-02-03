@@ -36,17 +36,25 @@
               (format s "~a" (plump:text n)))
           :test #'plump:text-node-p))))))
 
-(defun pprint-text (text)
+(defun emphasize (title content use-color)
+  (if use-color
+      (format t "~c[35;1m~a~c[0m~@[~a~]~%"
+              #\ESC title #\ESC content)
+      (format t "[~a]~a~%" title content))) 
+
+(defun pprint-text (text use-color)
   (let ((m) (lines (mapcar #'str:trim (str:lines text))))
-    (format t "~c[35;1m~a~c[0m~%" #\ESC (car lines) #\ESC)
+    (emphasize (car lines) "" use-color)
     (loop :for line :in (butlast (cddr lines))
           :unless (str:contains? "X3J13" line)
           :when (car (setf m
                            (multiple-value-list
                              (ppcre:scan "^[A-Z][a-zA-Z ]+:" line))))
-          :do (format t "~%~c[35;1m~a~c[0m~@[~a~]~%"
-                      #\ESC (subseq line (car m) (cadr m))
-                      #\ESC (subseq line (cadr m)))
+          :do (progn
+                (terpri)
+                (emphasize (subseq line (car m) (cadr m))
+                           (subseq line (cadr m))
+                           use-color))
           :else :do (format t "~a~%" line))
     (format t "~%~a~2%" (last lines))))
 
@@ -77,8 +85,8 @@
 (defun get-url (symbol)
   (get-data symbol url))
 
-(defun show (symbol)
+(defun show (symbol &key use-color)
   (let ((text (get-data symbol text)))
     (if text
-        (pprint-text text)
+        (pprint-text text use-color)
         (format t "No documentation found on ~a.~%" symbol))))

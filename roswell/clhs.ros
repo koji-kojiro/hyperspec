@@ -16,7 +16,11 @@ exec ros -Q -- $0 "$@"
   (:name :url
    :description "Print url instead of document."
    :short #\u
-   :long "url"))
+   :long "url")
+  (:name :nocolor
+   :description "Do not use ANSI escapes."
+   :short #\n
+   :long "nocolor"))
 
 (defpackage :ros.script.clhs.3758107750
   (:use :cl))
@@ -43,7 +47,7 @@ exec ros -Q -- $0 "$@"
         (when-option (options :url)
           (format t "~a~%" (hs:get-url (car args)))
           (opts:exit))
-        (hs:show (car args)))
+        (hs:show (car args) :use-color (null (getf options :nocolor))))
       (condition (c)
         (format t "Error: ~a~%" c)
         (opts:exit 1)))))
