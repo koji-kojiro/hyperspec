@@ -1,16 +1,5 @@
 (in-package :hyperspec)
 
-(defclass document ()
-  ((url
-    :initarg :url
-    :reader url)
-   (html
-    :initarg :html
-    :reader html)
-   (text
-    :initarg :text
-    :reader text)))
-
 (defvar *cache* nil)
 
 (defparameter *clhs-base-url*
@@ -59,26 +48,23 @@
     (format t "~%~a~2%" (last lines))))
 
 (defun lookup (symbol)
-  (loop :for (name value) :in *cache*
-        :when (string-equal name symbol)
-        :do (return-from lookup value))
+  (let ((value (assoc symbol *cache* :test #'string-equal)))
+    (when value (return-from lookup (cadr value))))
   (let ((value (assoc symbol *symbols-map* :test #'string-equal)))
     (when value
       (destructuring-bind (name . url) value
         (let* ((url (clhs-url url))
-               (html (retrieve-url url))
-               (doc (make-instance 'document
-                      :url url
-                      :html html
-                      :text (extract-text html))))
-          (push (list name doc) *cache*)
-          doc)))))
+               (html (retrieve-url url)))
+          (cadar
+            (push
+              `(,name ((url ,url)
+                       (html ,html)
+                       (text ,(extract-text html))))
+              *cache*)))))))
 
-(defmacro get-data (symbol accessor)
-  (let ((doc (gensym)))
-    `(let ((,doc (lookup ,symbol)))
-       (when ,doc (,accessor ,doc)))))
-
+(defmacro get-data (symbol key)
+  `(cadr (assoc ',key (lookup ,symbol) :test #'string-equal)))
+ 
 (defun get-html (symbol)
   (get-data symbol html))
 
