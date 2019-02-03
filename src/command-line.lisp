@@ -22,7 +22,7 @@
   `(let ((it (getf ,options ,opt)))
      (when it ,@body)))
 
-(defun main (argv)
+(defun main (&optional argv)
   (multiple-value-bind (options args)
     (handler-case
       (if argv (opts:get-opts argv) (opts:get-opts))
