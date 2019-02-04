@@ -76,6 +76,40 @@
                        (text ,(extract-text html))))
               *cache*)))))))
 
+(defun edit-distance (str1 str2)
+  (let ((n (length str1))
+        (m (length str2)))
+    (let ((col (make-array (1+ m) :element-type 'integer))
+          (prev-col (make-array (1+ m) :element-type 'integer)))
+      (dotimes (i (1+ m))
+        (setf (svref prev-col i) i))
+      (dotimes (i n)
+        (setf (svref col 0) (1+ i))
+        (dotimes (j m)
+          (setf (svref col (1+ j))
+                (min (1+ (svref col j))
+                     (1+ (svref prev-col (1+ j)))
+                     (+ (svref prev-col j)
+                     (if (char-equal (schar str1 i)
+                                     (schar str2 j))
+                         0 1)))))
+        (rotatef col prev-col))
+      (svref prev-col m))))
+
+(defun list-possible-choice (symbol n)
+  (let ((target (string symbol)))
+    (mapcar 
+      #'car
+      (subseq
+        (sort
+          (mapcar
+            #'(lambda (elm)
+                (list (car elm)
+                      (edit-distance (string (car elm)) target)))
+            *symbols-map*)
+          #'< :key #'cadr)
+        0 n))))
+
 (defmacro get-data (symbol key)
   `(cadr (assoc ',key (lookup ,symbol) :test #'string-equal)))
  
@@ -88,5 +122,8 @@
 (defun show (symbol &key use-color)
   (let ((text (get-data symbol text)))
     (if text
-        (pprint-text text use-color)
-        (format t "No documentation found on ~a.~%" symbol))))
+        (or (pprint-text text use-color) t)
+        (progn 
+          (format t "No documentation found on ~a.~2%" symbol)
+          (format t "Did you mean:~%~{  ~a~}~2%"
+                  (list-possible-choice symbol 4))))))

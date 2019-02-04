@@ -35,9 +35,11 @@
         (when-option (options :url)
           (format t "~a~%" (hs:get-url (car args)))
           (opts:exit))
-        (hs:show (car args) :use-color (null (getf options :nocolor))))
+        (opts:exit
+          (if (hs:show
+                (car args)
+                :use-color (null (getf options :nocolor)))
+              0 1)))
       (condition (c)
         (format t "Error: ~a~%" c)
         (opts:exit 1)))))
-
-
