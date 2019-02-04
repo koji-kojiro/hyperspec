@@ -26,7 +26,7 @@ A command line tool named `clhs` is also included in this project.
 ### With Roswell
 
 ```
-$ ros install koji-kojiro.hyperspec
+$ ros install koji-kojiro/hyperspec
 ```
 
 ### Build from source (with SBCL)
@@ -47,7 +47,7 @@ Usage: clhs [-h|--help] [-u|--url] symbol
 Available options:
   -h, --help               Print this help and exit.
   -u, --url                Print url instead of document.
- -n, --nocolor            Do not use ANSI escapes.
+  -n, --nocolor            Do not use ANSI escapes.
 
 ```
 
