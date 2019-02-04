@@ -22,8 +22,18 @@
           (plump:traverse
             (plump:parse html) 
             #'(lambda (n)
-              (format s "~a" (plump:text n)))
-          :test #'plump:text-node-p))))))
+                (let ((p (plump:parent n)))
+                  (if (and (plump:child-node-p p)
+                           (string-equal "PRE" (plump:tag-name p)))
+                      (format s "~a~%"
+                        (str:unlines
+                          (str:add-prefix
+                            (remove-if
+                              #'str:blank?
+                              (str:lines (plump:text n)))
+                            "|")))
+                      (format s "~a" (plump:text n)))))
+            :test #'plump:text-node-p))))))
 
 (defun emphasize (title content use-color)
   (if use-color
@@ -32,10 +42,11 @@
       (format t "[~a]~a~%" title content))) 
 
 (defun pprint-text (text use-color)
-  (let ((m) (lines (mapcar #'str:trim (str:lines text))))
+  (let ((m) (lines (str:lines text)))
     (emphasize (car lines) "" use-color)
     (loop :for line :in (butlast (cddr lines))
-          :unless (str:contains? "X3J13" line)
+          :unless (or (str:contains? "X3J13" line)
+                      (str:contains? "<TT>" line))
           :when (car (setf m
                            (multiple-value-list
                              (ppcre:scan "^[A-Z][a-zA-Z ]+:" line))))
@@ -44,7 +55,10 @@
                 (emphasize (subseq line (car m) (cadr m))
                            (subseq line (cadr m))
                            use-color))
-          :else :do (format t "~a~%" line))
+          :else
+          :do (format t 
+                (if (str:starts-with? "|" line) " ~a~%" "~a~%")
+                (str:trim line)))
     (format t "~%~a~2%" (last lines))))
 
 (defun lookup (symbol)
